@@ -1,0 +1,36 @@
+Armatop - armagetron top100 script
+==================================
+Armagetron is 3D game inspired by Tron film.
+
+
+Requirements
+------------
++ Perl > 5.10
++ Perl GetOpt::Long module
++ Perl File::Tail module (optional)
+
+
+How to use
+----------
+There is two ways to use this script with arma server:
+
+1) Running as standalone program (for sty+ct server version):
+
+   export ARMADIR="/path/to/armagetron/working/dir"
+   perl -T ./armatop.pl --workdir="$ARMADIR/var"
+   armagetronad-dedicated --userdatadir "$ARMADIR"\
+                          --input "$ARMADIR/var/commands"
+
+2) Using in pipe (for vanila server):
+
+   export ARMADIR="/path/to/armagetron/working/dir"
+   tail -n0 -f "$ARMADIR/var/ladderlog.txt" |\
+    perl -T ./armatop.pl --mode=stdio |\
+    armagetronad-dedicated  --userdatadir "$ARMADIR"
+
+
+Known issues
+------------
++ In stadalone mode when script process is killed tail process staying alive
+  while is no any text will be written to ladderlog.txt.
++ File::Tail working glitchy.

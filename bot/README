@@ -1,0 +1,11 @@
+Patch file to make your armagetron client acts like bot.
+
+To activate bot chage value of option CHATBOT_ALWAYS_ACTIVE to 1.
+
+Recommeded settings:
+CHATBOT_MIN_TIMESTEP 0
+CHATBOT_DECAY 0
+CHATBOT_DELAY 0
+CHATBOT_NEW_WALL_BLINDNESS 0
+CHATBOT_RANGE 10
+CHATBOT_DECAY 0

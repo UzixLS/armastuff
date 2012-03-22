@@ -1,0 +1,35 @@
+--- gCycle.cpp	2012-03-21 22:54:49.000000000 +0400
++++ gCycle.cpp~	2012-03-21 21:49:24.000000000 +0400
+@@ -318,26 +318,26 @@
+ #endif
+ 
+ static bool sg_chatBotAlwaysActive = false;
+-static tConfItem<bool> sg_chatBotAlwaysActiveConf( "CHATBOT_ALWAYS_ACTIVE", sg_chatBotAlwaysActive );
++static gChatBotSwitch sg_chatBotAlwaysActiveConf( "CHATBOT_ALWAYS_ACTIVE", sg_chatBotAlwaysActive );
+ 
+ static REAL sg_chatBotNewWallBlindness = .3;
+-static tConfItem<REAL> sg_chatBotNewWallBlindnessConf( "CHATBOT_NEW_WALL_BLINDNESS",
++static gChatBotSetting sg_chatBotNewWallBlindnessConf( "CHATBOT_NEW_WALL_BLINDNESS",
+         sg_chatBotNewWallBlindness );
+ 
+ static REAL sg_chatBotMinTimestep = .3;
+-static tConfItem<REAL> sg_chatBotMinTimestepConf( "CHATBOT_MIN_TIMESTEP",
++static gChatBotSetting sg_chatBotMinTimestepConf( "CHATBOT_MIN_TIMESTEP",
+         sg_chatBotMinTimestep );
+ 
+ static REAL sg_chatBotDelay = .5;
+-static tConfItem<REAL> sg_chatBotDelayConf( "CHATBOT_DELAY",
++static gChatBotSetting sg_chatBotDelayConf( "CHATBOT_DELAY",
+         sg_chatBotDelay );
+ 
+ static REAL sg_chatBotRange = 1;
+-static tConfItem<REAL> sg_chatBotRangeConf( "CHATBOT_RANGE",
++static gChatBotSetting sg_chatBotRangeConf( "CHATBOT_RANGE",
+         sg_chatBotRange );
+ 
+ static REAL sg_chatBotDecay = .02;
+-static tConfItem<REAL> sg_chatBotDecayConf( "CHATBOT_DECAY",
++static gChatBotSetting sg_chatBotDecayConf( "CHATBOT_DECAY",
+         sg_chatBotDecay );
+ 
+ class gCycleChatBot
