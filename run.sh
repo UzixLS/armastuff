@@ -48,14 +48,14 @@ esac; case "$1" in
 		echo -n "$! "; echo -n $! >"$HOMDIR/var/pid.armatop"
 
 		while true; do
-			env LD_LIBRARY_PATH=/opt/arma/lib/ $PROGDIR/bin/armagetronad-dedicated --userdatadir "$HOMDIR" --input "$HOMDIR/var/commands" >"$HOMDIR/var/log" 2>&1 &
+			env LD_LIBRARY_PATH=/opt/arma/lib/ $PROGDIR/bin/armagetronad-dedicated\
+				--userdatadir "$HOMDIR" --input "$HOMDIR/var/commands" >"$HOMDIR/var/log" 2>&1 &
 			trap "kill %1; exit;" TERM INT
 			trap "kill -HUP %1; wait %1;" HUP
 			wait %1
 			sleep 3
 		done &
-		echo -n "$! "; echo -n $! >"$HOMDIR/var/pid"
-		
+		echo -n "$! "; echo -n $! >"$HOMDIR/var/pid"		
 		echo .
 		;;
 	restart)
