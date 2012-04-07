@@ -1,0 +1,63 @@
+*** gCycle~.cpp	2012-04-07 18:23:58.797405712 +0400
+--- gCycle.cpp	2012-04-07 19:20:39.702269888 +0400
+***************
+*** 226,231 ****
+--- 226,233 ----
+  static tSettingItem<int> s_s("SCORE_SUICIDE",score_suicide);
+  
+  // input control
++ uActionPlayer gCycle::s_bot("CYCLE_BOT", -9);
++ static bool s_imbot=false;
+  
+  uActionPlayer gCycle::s_brake("CYCLE_BRAKE", -9);
+  static uActionPlayer s_brakeToggle("CYCLE_BRAKE_TOGGLE", -9);
+***************
+*** 309,314 ****
+--- 311,317 ----
+  #endif
+  #endif
+  
++ #define DEBUGCHATBOT
+  #ifdef DEBUGCHATBOT
+  typedef tSettingItem<REAL> gChatBotSetting;
+  typedef tSettingItem<bool> gChatBotSwitch;
+***************
+*** 316,321 ****
+--- 319,325 ----
+  typedef nSettingItem<REAL> gChatBotSetting;
+  typedef nSettingItem<bool> gChatBotSwitch;
+  #endif
++ #undef DEBUGCHATBOT
+  
+  static bool sg_chatBotAlwaysActive = false;
+  static gChatBotSwitch sg_chatBotAlwaysActiveConf( "CHATBOT_ALWAYS_ACTIVE", sg_chatBotAlwaysActive );
+***************
+*** 2745,2751 ****
+          // chatting? activate chatbot
+          if ( bool(player) &&
+                  player->IsHuman() &&
+!                 ( sg_chatBotAlwaysActive || player->IsChatting() ) &&
+                  player->Owner() == sn_myNetID )
+          {
+              gCycleChatBot & bot = gCycleChatBot::Get( this );
+--- 2749,2755 ----
+          // chatting? activate chatbot
+          if ( bool(player) &&
+                  player->IsHuman() &&
+!                 ( sg_chatBotAlwaysActive || player->IsChatting() || s_imbot ) &&
+                  player->Owner() == sn_myNetID )
+          {
+              gCycleChatBot & bot = gCycleChatBot::Get( this );
+***************
+*** 3777,3782 ****
+--- 3781,3790 ----
+          }
+          return true;
+      }
++     else if(s_bot==*Act){
++         s_imbot = (x==-1.0)?false:true;
++         return true;
++     }
+      return false;
+  }
+  
