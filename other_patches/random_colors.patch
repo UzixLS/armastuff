@@ -1,0 +1,52 @@
+--- ePlayer.cpp~	2012-04-18 19:36:18.000000000 +0400
++++ ePlayer.cpp	2012-04-18 19:53:16.984163499 +0400
+@@ -6630,48 +6630,10 @@
+ 
+ static void se_RandomizeColor( ePlayer * l, ePlayerNetID * p )
+ {
+-    int currentRGB[3];
+-    int newRGB[3];
+-    int nullRGB[3]={0,0,0};
+-
+     static tReproducibleRandomizer randomizer;
+-
+     for( int i = 2; i >= 0; --i )
+     {
+-        currentRGB[i] = l->rgb[i];
+-        newRGB[i] = randomizer.Get(15);
+-    }
+-
+-    int currentMinDiff = se_ColorDistance( currentRGB, nullRGB )/2;
+-    int newMinDiff = se_ColorDistance( newRGB, nullRGB )/2;
+-
+-    // check the minimal distance of the new random color with all players
+-    for ( int i = se_PlayerNetIDs.Len()-1; i >= 0; --i )
+-    {
+-        ePlayerNetID * other = se_PlayerNetIDs(i);
+-        if ( other != p )
+-        {
+-            int color[3] = { other->r, other->g, other->b };
+-            int currentDiff = se_ColorDistance( currentRGB, color );
+-            int newDiff     = se_ColorDistance( newRGB, color );
+-            if ( currentDiff < currentMinDiff )
+-            {
+-                currentMinDiff = currentDiff;
+-            }
+-            if ( newDiff < newMinDiff )
+-            {
+-                newMinDiff = newDiff;
+-            }
+-        }
+-    }
+-
+-    // update current color
+-    if ( currentMinDiff < newMinDiff )
+-    {
+-        for( int i = 2; i >= 0; --i )
+-        {
+-            l->rgb[i] = newRGB[i];
+-        }
++        l->rgb[i] = randomizer.Get(31);
+     }
+ }
+ 
