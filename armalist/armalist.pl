@@ -9,14 +9,13 @@ use Getopt::Long;
 use WWW::Curl::Easy;
 use XML::Simple;
 use Encode;
-use Data::Dumper;
 
 my $debug = 0;
 my $noempty = 0;
 my $watch = 0;
 my $html = 0;
 my $url = 'http://simamo.de/~manuel/arma-serverlist.js/serverxml.php';
-my $file = 'serverxml.php';
+my $file = 'armalist.xml';
 my $logfile = 'armalist.log';
 
 GetOptions (
@@ -180,7 +179,8 @@ sub compare_log
 		if (defined $old->{$sname}) {
 			for (qw/addr descr url ver maxpl/) {
 				if (! ($old->{$sname}{$_} ~~ $new->{$sname}{$_})) {
-					print $out "$time: server ".&bold($sname)." changed ".&bold($_)." from ".&bold($old->{$sname}{$_})." to ".&bold($new->{$sname}{$_}).&endl;
+					print $out "$time: server ".&bold($sname)." changed ".&bold($_).
+						" from ".&bold($old->{$sname}{$_})." to ".&bold($new->{$sname}{$_}).&endl;
 				}
 			}
 		}
@@ -191,7 +191,8 @@ sub compare_log
 		for my $sname (sort keys %{$s}) {
 			for my $pname (@{$s->{$sname}{players}}) {
 				if ($pname ~~ %playerlist && defined $playerlist{$pname}{$s}) {
-					print $out "$time: clones for ".&bold($pname)." detected on ".&bold($playerlist{$pname}{$s})." and ".&bold($sname).&endl if ($s == $new);
+					print $out "$time: clones for ".&bold($pname)." detected on ".
+						&bold($playerlist{$pname}{$s})." and ".&bold($sname).&endl if ($s == $new);
 					$pname .= '_' while (defined $playerlist{$pname}{$s});
 				}
 				$playerlist{$pname}{$s} = $sname;
@@ -204,7 +205,8 @@ sub compare_log
 		} elsif (! defined $playerlist{$pname}{$new}) {
 			print $out "$time: Player ".&bold($pname)." left from server ".&bold($playerlist{$pname}{$old}).&endl;
 		} elsif (! ($playerlist{$pname}{$old} ~~ $playerlist{$pname}{$new})) {
-			print $out "$time: Player ".&bold($pname)." moved from server ".&bold($playerlist{$pname}{$old})." to server ".&bold($playerlist{$pname}{$new}).&endl;
+			print $out "$time: Player ".&bold($pname)." moved from server ".
+				&bold($playerlist{$pname}{$old})." to server ".&bold($playerlist{$pname}{$new}).&endl;
 		}
 	}
 
@@ -252,13 +254,11 @@ print "Starting " if $debug;
 if ($watch) {
 	print "watcher\n" if $debug;
 	my %savedservers = &fill_serverhash (&read_file ($file)) if (-r $file);
-	#my %activservers = &fill_serverhash (&read_inet ($url, $file));
-	my %activservers = &fill_serverhash (&read_file ("AAA.xml"));
+	my %activservers = &fill_serverhash (&read_inet ($url, $file));
 	&compare_log (\%savedservers, \%activservers, $logfile);
 } else {
 	print "lister\n" if $debug;
-	#my %activservers = &fill_serverhash (&read_inet ($url));
-	my %activservers = &fill_serverhash (&read_file ("AAA.xml"));
+	my %activservers = &fill_serverhash (&read_inet ($url));
 	$html && &print_html(\%activservers) || &print_plain(\%activservers);
 }
 
