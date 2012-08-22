@@ -7,8 +7,9 @@ use strict;
 use POSIX qw(strftime);
 use Getopt::Long;
 use WWW::Curl::Easy;
-use XML::Simple;
 use Encode;
+$ENV{XML_SIMPLE_PREFERRED_PARSER} = 'XML::Parser';
+use XML::Simple;
 
 my $debug = 0;
 my $noempty = 0;
@@ -23,8 +24,8 @@ GetOptions (
 	"noempty" => \$noempty,
 	"watch" => \$watch,
 	"html" => \$html,
-	"url" => \$url,
-	"file" => \$file,
+	"url=s" => \$url,
+	"file=s" => \$file,
 	"logfile=s" => \$logfile,
 	);
 
@@ -89,7 +90,7 @@ sub bold
 sub endl
 {
 	if ($html) {
-		return "<br>";
+		return "<br>\n";
 	} else {
 		return "\n";
 	}
@@ -158,7 +159,7 @@ sub compare_log
 	}
 	print "Comparing server lists\n" if $debug;
 	print "Open file $outfile\n" if $debug;
-	open my $out, '>', $outfile or die "Cannot open file $outfile: $!\n";
+	open my $out, '>>', $outfile or die "Cannot open file $outfile: $!\n";
 
 	if (! keys %{$new}) {
 		print $out "$time: error upgrading server list.".&endl;
@@ -166,14 +167,14 @@ sub compare_log
 	}
 	if (! keys %{$old}) {
 		print "No old data found\n" if $debug;
-		print $out "$time: start watching.".&endl;
+		print $out "$time: Start watching.".&endl;
 	}
 	
 	my @whoremoved = grep { ! ($_ ~~ @{[keys %{$new}]}) } keys %{$old};
-	print $out "$time: server ".&bold($_)." offline".&endl for sort @whoremoved;
+	print $out "$time: Server ".&bold($_)." offline".&endl for sort @whoremoved;
 
 	my @whoadded = grep { ! ($_ ~~ @{[keys %{$old}]}) } keys %{$new};
-	print $out "$time: server ".&bold($_)." on ".&bold($new->{$_}{addr})." online".&endl for sort (@whoadded);
+	print $out "$time: Server ".&bold($_)." on ".&bold($new->{$_}{addr})." online".&endl for sort (@whoadded);
 
 	for my $sname (keys %{$new}) {
 		if (defined $old->{$sname}) {
@@ -191,7 +192,7 @@ sub compare_log
 		for my $sname (sort keys %{$s}) {
 			for my $pname (@{$s->{$sname}{players}}) {
 				if ($pname ~~ %playerlist && defined $playerlist{$pname}{$s}) {
-					print $out "$time: clones for ".&bold($pname)." detected on ".
+					print $out "$time: Clones for ".&bold($pname)." detected on ".
 						&bold($playerlist{$pname}{$s})." and ".&bold($sname).&endl if ($s == $new);
 					$pname .= '_' while (defined $playerlist{$pname}{$s});
 				}
@@ -201,7 +202,7 @@ sub compare_log
 	}
 	for my $pname (keys %playerlist) {
 		if (! defined $playerlist{$pname}{$old}) {
-			print $out "$time: Player ".&bold($pname)." joined to server".&bold($playerlist{$pname}{$new}).&endl;
+			print $out "$time: Player ".&bold($pname)." joined to server ".&bold($playerlist{$pname}{$new}).&endl;
 		} elsif (! defined $playerlist{$pname}{$new}) {
 			print $out "$time: Player ".&bold($pname)." left from server ".&bold($playerlist{$pname}{$old}).&endl;
 		} elsif (! ($playerlist{$pname}{$old} ~~ $playerlist{$pname}{$new})) {
@@ -227,7 +228,7 @@ sub fill_serverhash
 				if (ref($serverlist->{'Server'}->{$i}->{'Player'}->{$ii}) eq "HASH" &&
 					defined $serverlist->{'Server'}->{$i}->{'Player'}->{$ii}->{'global_id'}) {
 					push @{$servers{$sname}{players}},
-						"$ii ($serverlist->{'Server'}->{$i}->{'Player'}->{$ii}->{'global_id'})";
+						&process($ii)."($serverlist->{'Server'}->{$i}->{'Player'}->{$ii}->{'global_id'})";
 				} else {
 					push @{$servers{$sname}{players}}, &process($ii);
 				}
@@ -258,7 +259,8 @@ if ($watch) {
 	&compare_log (\%savedservers, \%activservers, $logfile);
 } else {
 	print "lister\n" if $debug;
-	my %activservers = &fill_serverhash (&read_inet ($url));
+	#my %activservers = &fill_serverhash (&read_inet ($url));
+	my %activservers = &fill_serverhash (&read_file("serverxml.php"));
 	$html && &print_html(\%activservers) || &print_plain(\%activservers);
 }
 
