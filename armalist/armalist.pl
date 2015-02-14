@@ -15,15 +15,23 @@ my $debug = 0;
 my $noempty = 0;
 my $watch = 0;
 my $html = 0;
-my $url = 'http://simamo.de/~manuel/arma-serverlist.js/serverxml.php';
+my $stdout = 0;
 my $file = 'armalist.xml';
 my $logfile = 'armalist.log';
+my $url;
+my @urls = (
+	'http://crazy-tronners.com/grid/serverxml.php',
+    'http://browser.hashpickup.net/serverxml.xml',
+	'http://simamo.de/~manuel/arma-serverlist.js/serverxml.php',
+	'http://wrtlprnft.ath.cx/serverlist/serverxml.php',
+);
 
 GetOptions (
 	"debug" => \$debug,
 	"noempty" => \$noempty,
 	"watch" => \$watch,
 	"html" => \$html,
+	"stdout" => \$stdout,
 	"url=s" => \$url,
 	"file=s" => \$file,
 	"logfile=s" => \$logfile,
@@ -57,9 +65,11 @@ sub read_inet
 	
 	$retcode = $curl->perform;
 	if ($retcode != 0) {
-		die ("An error happened: $retcode ".$curl->strerror($retcode)." ".$curl->errbuf."\n");
+		die ("Curl error $retcode: ".$curl->strerror($retcode)." ".$curl->errbuf."\n");
 	}
 	print "...done\n" if $debug;
+
+	XMLin($response_body, ForceArray => 1, parseropts => [ load_ext_dtd => 0 ]) or die "Incorrect HTTP data";
 
 	if ($outfile) {
 		print "Writting file $outfile\n" if $debug;
@@ -68,14 +78,14 @@ sub read_inet
 		close $out;
 	}
 
-	return XMLin($response_body, ForceArray => 1, parseropts => [ load_ext_dtd => 0 ])
+	return XMLin($response_body, ForceArray => 1, parseropts => [ load_ext_dtd => 0 ]);
 }
 
 sub read_file
 {
 	my $in = shift;
 	print "Reading file $in\n" if $debug;
-	return XMLin($in, ForceArray => 1, parseropts => [ load_ext_dtd => 0 ]);
+	return (XMLin($in, ForceArray => 1, parseropts => [ load_ext_dtd => 0 ]) or die "Incorrect file data");
 }
 
 sub bold
@@ -158,11 +168,17 @@ sub compare_log
 		$time = "<i>$time</i>";
 	}
 	print "Comparing server lists\n" if $debug;
+	
 	print "Open file $outfile\n" if $debug;
-	open my $out, '>>', $outfile or die "Cannot open file $outfile: $!\n";
+	my $out;
+	if ($stdout) {
+		open $out, '>-';
+	} else {
+		open $out, '>>', $outfile or die "Cannot open file $outfile: $!\n";
+	}
 
 	if (! keys %{$new}) {
-		print $out "$time: error upgrading server list.".&endl;
+		print $out "$time: Error upgrading server list.".&endl;
 		die "$time: error upgrading server list.";
 	}
 	if (! keys %{$old}) {
@@ -180,7 +196,7 @@ sub compare_log
 		if (defined $old->{$sname}) {
 			for (qw/addr descr url ver maxpl/) {
 				if (! ($old->{$sname}{$_} ~~ $new->{$sname}{$_})) {
-					print $out "$time: server ".&bold($sname)." changed ".&bold($_).
+					print $out "$time: Server ".&bold($sname)." changed ".&bold($_).
 						" from ".&bold($old->{$sname}{$_})." to ".&bold($new->{$sname}{$_}).&endl;
 				}
 			}
@@ -252,6 +268,8 @@ sub fill_serverhash
 
 print "Starting " if $debug;
 
+$url = $urls[0] if (length($url) < 1);
+
 if ($watch) {
 	print "watcher\n" if $debug;
 	my %savedservers = &fill_serverhash (&read_file ($file)) if (-r $file);
@@ -259,8 +277,7 @@ if ($watch) {
 	&compare_log (\%savedservers, \%activservers, $logfile);
 } else {
 	print "lister\n" if $debug;
-	#my %activservers = &fill_serverhash (&read_inet ($url));
-	my %activservers = &fill_serverhash (&read_file("serverxml.php"));
+	my %activservers = &fill_serverhash (&read_inet ($url));
 	$html && &print_html(\%activservers) || &print_plain(\%activservers);
 }
 
